@@ -29,20 +29,20 @@ else()
   set(TELEGRAM_CURL_TARGET CURL::libcurl)
 endif()
 
-add_library(Telegram SHARED src/telegram.cpp)
-target_include_directories(Telegram PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(Telegram PRIVATE "${TELEGRAM_CURL_TARGET}")
+add_library(reaper_Telegram SHARED src/telegram.cpp)
+target_include_directories(reaper_Telegram PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(reaper_Telegram PRIVATE "${TELEGRAM_CURL_TARGET}")
 
 if (WIN32)
-  target_compile_definitions(Telegram PRIVATE
+  target_compile_definitions(reaper_Telegram PRIVATE
     _WIN32_WINNT=0x0601
     WINVER=0x0601
     NOMINMAX
   )
-  target_link_libraries(Telegram PRIVATE ws2_32 crypt32 wldap32 normaliz)
+  target_link_libraries(reaper_Telegram PRIVATE ws2_32 crypt32 wldap32 normaliz)
 endif()
 
-set_target_properties(Telegram PROPERTIES
+set_target_properties(reaper_Telegram PROPERTIES
   PREFIX ""
   SUFFIX ".dll"
   CXX_VISIBILITY_PRESET hidden
