@@ -88,7 +88,8 @@ end
 
 local function loop()
     pollUpload()
-    reaper.ImGui_PushFont(ctx, font)
+    -- Recent ReaImGui versions require the base font size as the third argument.
+    reaper.ImGui_PushFont(ctx, font, 16.0)
     reaper.ImGui_SetNextWindowSize(ctx, 310, 120, reaper.ImGui_Cond_FirstUseEver())
     local visible, open = reaper.ImGui_Begin(ctx, "Telegram", true)
     if visible then
