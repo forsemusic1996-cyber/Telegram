@@ -1,1 +1,59 @@
--- REAPER Telegram uploader (no GUI).\n-- Put this file in the REAPER Scripts directory.\n-- Edit the two values below, then run this script from the REAPER Action List.\n\nlocal BOT_TOKEN = "PASTE_NEW_BOT_TOKEN_HERE"\nlocal CHAT_ID = "PASTE_CHAT_ID_HERE"\n\nlocal function selectedItemFile()\n    local item = reaper.GetSelectedMediaItem(0, 0)\n    if not item then return nil end\n\n    local take = reaper.GetActiveTake(item)\n    if not take or reaper.TakeIsMIDI(take) then return nil end\n\n    local source = reaper.GetMediaItemTake_Source(take)\n    local path = reaper.GetMediaSourceFileName(source, "")\n    return path ~= "" and path or nil\nend\n\nif BOT_TOKEN == "" or BOT_TOKEN == "PASTE_NEW_BOT_TOKEN_HERE" or\n   CHAT_ID == "" or CHAT_ID == "PASTE_CHAT_ID_HERE" then\n    reaper.ShowConsoleMsg("[Telegram] Set BOT_TOKEN and CHAT_ID at the top of Telegram.lua\n")\n    return\nend\n\nif not reaper.APIExists("Telegram_StartUpload") then\n    reaper.ShowConsoleMsg("[Telegram] reaper_Telegram.dll is not installed\n")\n    return\nend\n\nlocal path = selectedItemFile()\nif not path then\n    reaper.ShowConsoleMsg("[Telegram] Select an audio item first\n")\n    return\nend\n\n-- Empty caption: no duplicate text with the file name.\n-- Telegram may still display the attachment's technical filename in the document bubble.\nlocal job = reaper.Telegram_StartUpload(BOT_TOKEN, CHAT_ID, path, "")\nif not job or job < 0 then\n    reaper.ShowConsoleMsg("[Telegram] Could not start upload\n")\n    return\nend\n\nlocal function pollUpload()\n    local state = reaper.Telegram_PollUpload(job)\n    if state == 0 then\n        reaper.defer(pollUpload)\n    elseif state == 1 then\n        reaper.Telegram_ReleaseUpload(job)\n        reaper.ShowConsoleMsg("[Telegram] File sent\n")\n    else\n        local errorText = reaper.Telegram_UploadError(job)\n        reaper.Telegram_ReleaseUpload(job)\n        reaper.ShowConsoleMsg("[Telegram] Upload error: " .. tostring(errorText) .. "\n")\n    end\nend\n\npollUpload\n()\n
+-- REAPER Telegram uploader (no GUI).
+-- Put this file in the REAPER Scripts directory.
+-- Edit the two values below, then run this script from the REAPER Action List.
+
+local BOT_TOKEN = "PASTE_NEW_BOT_TOKEN_HERE"
+local CHAT_ID = "PASTE_CHAT_ID_HERE"
+
+local function selectedItemFile()
+    local item = reaper.GetSelectedMediaItem(0, 0)
+    if not item then return nil end
+
+    local take = reaper.GetActiveTake(item)
+    if not take or reaper.TakeIsMIDI(take) then return nil end
+
+    local source = reaper.GetMediaItemTake_Source(take)
+    local path = reaper.GetMediaSourceFileName(source, "")
+    return path ~= "" and path or nil
+end
+
+if BOT_TOKEN == "" or BOT_TOKEN == "PASTE_NEW_BOT_TOKEN_HERE" or
+   CHAT_ID == "" or CHAT_ID == "PASTE_CHAT_ID_HERE" then
+    reaper.ShowConsoleMsg("[Telegram] Set BOT_TOKEN and CHAT_ID at the top of Telegram.lua")
+    return
+end
+
+if not reaper.APIExists("Telegram_StartUpload") then
+    reaper.ShowConsoleMsg("[Telegram] reaper_Telegram.dll is not installed")
+    return
+end
+
+local path = selectedItemFile()
+if not path then
+    reaper.ShowConsoleMsg("[Telegram] Select an audio item first")
+    return
+end
+
+-- Empty caption: no duplicate text with the file name.
+-- Telegram may still display the attachment's technical filename in the document bubble.
+local job = reaper.Telegram_StartUpload(BOT_TOKEN, CHAT_ID, path, "")
+if not job or job < 0 then
+    reaper.ShowConsoleMsg("[Telegram] Could not start upload")
+    return
+end
+
+local function pollUpload()
+    local state = reaper.Telegram_PollUpload(job)
+    if state == 0 then
+        reaper.defer(pollUpload)
+    elseif state == 1 then
+        reaper.Telegram_ReleaseUpload(job)
+        reaper.ShowConsoleMsg("[Telegram] File sent")
+    else
+        local errorText = reaper.Telegram_UploadError(job)
+        reaper.Telegram_ReleaseUpload(job)
+        reaper.ShowConsoleMsg("[Telegram] Upload error: " .. tostring(errorText))
+    end
+end
+
+pollUpload()
