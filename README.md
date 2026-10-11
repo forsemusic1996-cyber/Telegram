@@ -4,17 +4,17 @@ Asynchronous Telegram document upload for REAPER. The upload runs in a native wo
 
 ## Windows 7 support
 
-The Windows build targets Windows 7 (`_WIN32_WINNT=0x0601`) and uses a static libcurl build with Schannel. The resulting `Telegram.dll` does not require a separately installed `curl.exe` or MinGW runtime DLLs.
+The Windows build targets Windows 7 (`_WIN32_WINNT=0x0601`) and uses a static libcurl build with Schannel. The resulting `reaper_Telegram.dll` does not require a separately installed `curl.exe` or MinGW runtime DLLs.
 
 The GitHub Action builds a Windows x64 DLL. REAPER's official Windows extension SDK recommends MSVC-compatible builds; the workflow uses the Visual Studio toolchain.
 
 ## Installation
 
-1. Download `Telegram.dll` from the GitHub Actions artifact.
+1. Download `reaper_Telegram.dll` from the GitHub Actions artifact.
 2. Copy it to the REAPER `UserPlugins` directory.
 3. Copy `scripts/Telegram.lua` and `scripts/Telegram.ini.example` to a folder in the REAPER Scripts directory.
-4. Rename `Telegram.ini.example` to `Telegram.ini` and set `BOT_TOKEN` and `CHAT_ID`.
-5. Load `Telegram.lua` from the REAPER Action List.
+4. Run `Telegram.lua` from the REAPER Action List, open `Settings`, enter the bot token and chat ID, and press `Save settings`.
+5. The settings are saved in `Telegram.ini` next to the Lua script.
 
 The token and chat ID are read at runtime. They are not compiled into the DLL and should not be committed to GitHub.
 
