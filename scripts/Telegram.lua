@@ -23,6 +23,16 @@ local cfg = readConfig(CONFIG_PATH)
 local BOT_TOKEN = cfg.BOT_TOKEN or ""
 local CHAT_ID = cfg.CHAT_ID or ""
 
+local function saveConfig(path, token, chat_id)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write("# Telegram bot settings. Keep this file private.\n")
+    f:write("BOT_TOKEN=" .. (token or "") .. "\n")
+    f:write("CHAT_ID=" .. (chat_id or "") .. "\n")
+    f:close()
+    return true
+end
+
 local function selectedItemFile()
     local item = reaper.GetSelectedMediaItem(0, 0)
     if not item then return nil end
@@ -44,6 +54,7 @@ reaper.ImGui_Attach(ctx, font)
 local job = nil
 local status = "Ready"
 local statusTime = 0
+local showSettings = (BOT_TOKEN == "" or CHAT_ID == "")
 
 local function startUpload(path)
     if BOT_TOKEN == "" or CHAT_ID == "" then
@@ -90,9 +101,39 @@ local function loop()
     pollUpload()
     -- Recent ReaImGui versions require the base font size as the third argument.
     reaper.ImGui_PushFont(ctx, font, 16.0)
-    reaper.ImGui_SetNextWindowSize(ctx, 310, 120, reaper.ImGui_Cond_FirstUseEver())
+    reaper.ImGui_SetNextWindowSize(ctx, 520, 300, reaper.ImGui_Cond_FirstUseEver())
     local visible, open = reaper.ImGui_Begin(ctx, "Telegram", true)
     if visible then
+        if reaper.ImGui_Button(ctx, showSettings and "Hide settings" or "Settings") then
+            showSettings = not showSettings
+        end
+
+        if showSettings then
+            reaper.ImGui_Separator(ctx)
+            reaper.ImGui_Text(ctx, "Bot token")
+            local tokenChanged, tokenValue = reaper.ImGui_InputText(
+                ctx, "##telegram_bot_token", BOT_TOKEN,
+                reaper.ImGui_InputTextFlags_Password())
+            if tokenChanged then BOT_TOKEN = tokenValue end
+
+            reaper.ImGui_Text(ctx, "Chat ID")
+            local chatChanged, chatValue = reaper.ImGui_InputText(
+                ctx, "##telegram_chat_id", CHAT_ID, 0)
+            if chatChanged then CHAT_ID = chatValue end
+
+            if reaper.ImGui_Button(ctx, "Save settings") then
+                if saveConfig(CONFIG_PATH, BOT_TOKEN, CHAT_ID) then
+                    status = "Settings saved"
+                else
+                    status = "Cannot write Telegram.ini"
+                end
+                statusTime = reaper.time_precise()
+            end
+            reaper.ImGui_SameLine(ctx)
+            reaper.ImGui_Text(ctx, "Saved in Telegram.ini")
+            reaper.ImGui_Separator(ctx)
+        end
+
         if reaper.ImGui_Button(ctx, "Send selected item") then
             local path = selectedItemFile()
             if path then
