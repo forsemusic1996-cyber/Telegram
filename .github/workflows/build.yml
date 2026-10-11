@@ -14,16 +14,16 @@ jobs:
       - name: Download curl source
         shell: pwsh
         run: |
-          Invoke-WebRequest \
-            -Uri "https://curl.se/download/curl-8.10.1.tar.xz" \
+          Invoke-WebRequest `
+            -Uri "https://curl.se/download/curl-8.10.1.tar.xz" `
             -OutFile "$env:RUNNER_TEMP\curl.tar.xz"
           7z x "$env:RUNNER_TEMP\curl.tar.xz" -so | 7z x -si -ttar -aoa -o"$env:RUNNER_TEMP\curl-src"
 
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -A x64 \
-            -DCURL_SOURCE_DIR="$env:RUNNER_TEMP\curl-src\curl-8.10.1" \
+          cmake -S . -B build -A x64 `
+            -DCURL_SOURCE_DIR="$env:RUNNER_TEMP\curl-src\curl-8.10.1" `
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
