@@ -1,0 +1,46 @@
+name: Build Telegram extension
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download curl source
+        shell: pwsh
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://curl.se/download/curl-8.10.1.tar.xz" `
+            -OutFile "$env:RUNNER_TEMP\curl.tar.xz"
+          7z x "$env:RUNNER_TEMP\curl.tar.xz" -so | 7z x -si -ttar -aoa -o"$env:RUNNER_TEMP\curl-src"
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -A x64 `
+            -DCURL_SOURCE_DIR="$env:RUNNER_TEMP\curl-src\curl-8.10.1" `
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build --config Release --parallel
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item build\Release\Telegram.dll out\Telegram.dll
+          Copy-Item scripts\Telegram.lua out\Telegram.lua
+          Copy-Item scripts\Telegram.ini.example out\Telegram.ini.example
+          Copy-Item README.md out\README.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: REAPER-Telegram-Windows-x64
+          path: out

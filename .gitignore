@@ -1,0 +1,6 @@
+build/
+out/
+Telegram.ini
+*.user
+*.suo
+.vs/

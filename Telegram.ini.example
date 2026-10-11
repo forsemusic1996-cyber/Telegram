@@ -1,0 +1,4 @@
+# Copy this file to Telegram.ini and fill in your own values.
+# Do not commit Telegram.ini to GitHub.
+BOT_TOKEN=
+CHAT_ID=
