@@ -19,18 +19,15 @@ end
 
 if BOT_TOKEN == "" or BOT_TOKEN == "PASTE_NEW_BOT_TOKEN_HERE" or
    CHAT_ID == "" or CHAT_ID == "PASTE_CHAT_ID_HERE" then
-    reaper.ShowConsoleMsg("[Telegram] Set BOT_TOKEN and CHAT_ID at the top of Telegram.lua")
     return
 end
 
 if not reaper.APIExists("Telegram_StartUpload") then
-    reaper.ShowConsoleMsg("[Telegram] reaper_Telegram.dll is not installed")
     return
 end
 
 local path = selectedItemFile()
 if not path then
-    reaper.ShowConsoleMsg("[Telegram] Select an audio item first")
     return
 end
 
@@ -38,7 +35,6 @@ end
 -- Telegram may still display the attachment's technical filename in the document bubble.
 local job = reaper.Telegram_StartUpload(BOT_TOKEN, CHAT_ID, path, "")
 if not job or job < 0 then
-    reaper.ShowConsoleMsg("[Telegram] Could not start upload")
     return
 end
 
@@ -48,11 +44,8 @@ local function pollUpload()
         reaper.defer(pollUpload)
     elseif state == 1 then
         reaper.Telegram_ReleaseUpload(job)
-        reaper.ShowConsoleMsg("[Telegram] File sent")
     else
-        local errorText = reaper.Telegram_UploadError(job)
         reaper.Telegram_ReleaseUpload(job)
-        reaper.ShowConsoleMsg("[Telegram] Upload error: " .. tostring(errorText))
     end
 end
 
